@@ -1,0 +1,32 @@
+{
+	"compilerOptions": {
+		"target": "es2022",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": false,
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true,
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"types": ["node"],
+		"paths": {
+			"@socket": ["./src/socket/index.js"],
+			"@socket/*": ["./src/socket/*"],
+			"@types/*": ["./src/types/*"],
+
+			// Storage
+			"@parties": ["./src/storage/parties.js"],
+			"@users": ["./src/storage/users.js"],
+
+			// Main classes
+			"@Party": ["./src/types/main/Party.js"],
+			"@User": ["./src/types/main/User.js"],
+
+			// Socket types
+			"@Server": ["./src/types/socket/CustomServer.js"],
+			"@Socket": ["./src/types/socket/CustomSocket.js"],
+		}
+	},
+}
