@@ -27,16 +27,25 @@ export default class Party {
 	}
 
 	public get connectedUsers(): User[] {
-		return [this._desktopUser, this._mobileUser].filter(user => user !== null) as User[];
+		return [this._desktopUser, this._mobileUser].filter(
+			user => user !== null
+		) as User[];
 	}
 
 	public get connectedUsersAsClientTypes(): UserClientType[] {
-		const connectedUsersClientTypes = this.connectedUsers.map(user => user.clientType);
-		return connectedUsersClientTypes.filter(clientType => clientType !== null) as UserClientType[];
+		const connectedUsersClientTypes =
+			this.connectedUsers.map(user => user.clientType);
+
+		return connectedUsersClientTypes.filter(
+			clientType => clientType !== null
+		) as UserClientType[];
 	}
 
 	// TODO: Implement a more secure password system in the future.
 	private _password: Nullable<string> = null;
+	public get hasPassword(): boolean {
+		return this._password !== null;
+	}
 
 	public constructor(password: Nullable<string> = null) {
 		do {
@@ -72,6 +81,14 @@ export default class Party {
 			}
 			default:
 				return false;
+		}
+	}
+
+	public removeUser(user: User) {
+		if (user === this._desktopUser) {
+			this._desktopUser = null;
+		} else if (user === this._mobileUser) {
+			this._mobileUser = null;
 		}
 	}
 
