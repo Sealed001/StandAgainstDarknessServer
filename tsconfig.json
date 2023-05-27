@@ -12,6 +12,7 @@
     "rootDir": "./src",
     "types": ["node"],
     "paths": {
+      "@config": ["./src/config"],
       "@events": ["./src/types/events"],
 
       // Storage
