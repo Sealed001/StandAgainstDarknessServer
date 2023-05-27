@@ -1,18 +1,26 @@
 import GetPartiesDataCTS from "./clientToServer/GetPartiesDataCTS";
 import JoinPartyDataCTS from "./clientToServer/JoinPartyDataCTS";
-import GetPartiesResultDataSTC from "./serverToClient/GetPartiesResultDataSTC";
-import JoinPartyResultDataSTC from "./serverToClient/JoinPartyResultDataSTC";
+import CreatePartyDataCTS from "./clientToServer/CreatePartyDataCTS";
+
+import GetPartiesResponseDataSTC from "./serverToClient/GetPartiesResponseDataSTC";
+import JoinPartyResponseDataSTC from "./serverToClient/JoinPartyResponseDataSTC";
+import createPartyResponseDataSTC from "./serverToClient/CreatePartyResponseDataSTC";
 
 import EventCallback from "../EventCallback";
 
 interface ClientToServerPartyEvents {
 	getParties: EventCallback<GetPartiesDataCTS>;
 	joinParty: EventCallback<JoinPartyDataCTS>;
+	createParty: EventCallback<CreatePartyDataCTS>;
 }
 
 interface ServerToClientPartyEvents {
-	getPartiesResult: EventCallback<GetPartiesResultDataSTC>;
-	joinPartyResult: EventCallback<JoinPartyResultDataSTC>;
+	getPartiesResponse: EventCallback<GetPartiesResponseDataSTC>;
+	joinPartyResponse: EventCallback<JoinPartyResponseDataSTC>;
+	createPartyResponse: EventCallback<createPartyResponseDataSTC>;
 }
 
-export { ClientToServerPartyEvents, ServerToClientPartyEvents };
+export {
+	ClientToServerPartyEvents,
+	ServerToClientPartyEvents,
+};
