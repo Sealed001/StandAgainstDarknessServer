@@ -12,7 +12,7 @@
     "rootDir": "./src",
     "types": ["node"],
     "paths": {
-      "@types/*": ["./src/types/*"],
+      "@events": ["./src/types/events"],
 
       // Storage
       "@parties": ["./src/storage/parties"],
@@ -25,6 +25,7 @@
       // Other types
       "@Socket": ["./src/types/socket/CustomSocket"],
       "@Server": ["./src/types/server/CustomServer"],
+      "@PartyInfo": ["./src/types/PartyInfo"],
     }
   },
 }
