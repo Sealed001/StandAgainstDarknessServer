@@ -1,6 +1,6 @@
 import { UUID } from "crypto";
 
-import Socket from "@types/socket/CustomSocket";
+import Socket from "@Socket";
 import User from "@User";
 
 export default function (socket: Socket) {
