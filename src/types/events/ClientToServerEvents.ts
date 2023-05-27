@@ -1,7 +1,8 @@
-import AskClientIdentityEvent from "@types/events/identification/AskClientIdentityEvent";
-import TellClientIdentityEvent from "@types/events/identification/TellClientIdentityEvent";
+import { ClientToServerIdentificationEvents } from "./identification";
+import { ClientToServerPartyEvents } from "./party";
+import GameEvents from "./game";
 
-export default interface ClientToServerEvents {
-	askClientIdentity: AskClientIdentityEvent;
-	tellClientIdentity: TellClientIdentityEvent;
-}
+export default interface ClientToServerEvents
+	extends ClientToServerIdentificationEvents,
+		ClientToServerPartyEvents,
+		GameEvents {}

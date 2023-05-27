@@ -1,8 +1,8 @@
 import { UUID } from "crypto";
 
-type JoinPartyData = {
+type JoinPartyDataCTS = {
 	partyId: UUID;
 	password?: string;
 };
 
-export default JoinPartyData;
+export default JoinPartyDataCTS;

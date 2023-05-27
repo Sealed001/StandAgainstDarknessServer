@@ -1,6 +1,6 @@
 import PartyInfo from "@PartyInfo";
 
-export type GetPartiesResultDataSTC = {
+type GetPartiesResultDataSTC = {
 	parties: PartyInfo[];
 };
 
