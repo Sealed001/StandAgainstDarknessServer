@@ -1,7 +1,14 @@
 import { randomUUID, UUID } from "crypto";
 import { Socket } from "socket.io";
 
-import users from "@users";
+import users, { addUser, removeUser } from "@users";
+
+import Party from "@Party";
+
+import GameEvents, {
+	desktopToMobileEventNames,
+	mobileToDesktopEventNames,
+} from "../events/game";
 
 export type UserClientType = "Desktop" | "Mobile";
 
@@ -18,37 +25,127 @@ export default class User {
 		return this._id;
 	}
 
-	public clientType: Nullable<UserClientType> = null;
+	private _clientType: Nullable<UserClientType> = null;
+	public get clientType(): Nullable<UserClientType> {
+		return this._clientType;
+	}
+
+	public party: Nullable<Party> = null;
 
 	private _socket: Nullable<Socket> = null;
-	private _expirationTimeout: Nullable<NodeJS.Timeout> = null;
 
 	public constructor() {
 		do {
 			this._id = randomUUID();
 		} while (User.exists(this._id));
 
-		users[this._id] = this;
+		addUser(this);
 	}
 
 	public destroy() {
-		delete users[this._id];
+		this.party?.removeUser(this);
+
+		this._unbindSocket();
+
+		removeUser(this);
 	}
 
-	public bindSocket(socket: Socket) {
+	private _unbindSocket() {
+		if (this._socket !== null) {
+			this._socket.data.user = null;
+			this._socket.disconnect();
+		}
+	}
+
+	public setClientType(clientType: UserClientType): User {
+		this._clientType = clientType;
+		return this;
+	}
+
+	public addGameEventsListener(): boolean {
+		if (this.clientType === null) {
+			return false;
+		}
+
+		switch (this.clientType) {
+			case "Desktop": {
+				for (const eventName of desktopToMobileEventNames) {
+					this._socket?.on(eventName, data => {
+						if (this.party === null) {
+							return;
+						}
+
+						if (this.party.mobileUser === null) {
+							return;
+						}
+
+						this.party.mobileUser.emitGameEvent(
+							eventName,
+							data
+						);
+					});
+				}
+				break;
+			}
+			case "Mobile": {
+				for (const eventName of mobileToDesktopEventNames) {
+					this._socket?.on(eventName, data => {
+						if (this.party === null) {
+							return;
+						}
+
+						if (this.party.desktopUser === null) {
+							return;
+						}
+
+						this.party.desktopUser.emitGameEvent(
+							eventName,
+							data
+						);
+					});
+				}
+				break;
+			}
+		}
+
+		return true;
+	}
+
+	public removeGameEventsListener() {
+		if (this._socket === null) {
+			return;
+		}
+
+		for (const eventName of [
+			...desktopToMobileEventNames,
+			...mobileToDesktopEventNames,
+		]) {
+			this._socket.removeAllListeners(eventName);
+		}
+	}
+
+	public bindSocket(socket: Socket): User {
+		this._unbindSocket();
+
 		this._socket = socket;
 
 		socket.data.user = this;
 
-		socket.on("disconnect", () => {
-			this._expirationTimeout = setTimeout(() => {
-				this.destroy();
-			});
+		socket.on("reconnect_failed", () => {
+			this.destroy();
 		});
 
-		socket.on("reconnect", () => {
-			clearTimeout(this._expirationTimeout!);
-			this._expirationTimeout = null;
-		});
+		return this;
+	}
+
+	public emitGameEvent(
+		eventName: keyof GameEvents,
+		data: any
+	) {
+		if (this._socket === null) {
+			return;
+		}
+
+		this._socket.emit(eventName, data);
 	}
 }

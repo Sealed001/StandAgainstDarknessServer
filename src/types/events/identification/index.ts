@@ -1,17 +1,21 @@
 import AskClientIdentityDataCTS from "./clientToServer/AskClientIdentityDataCTS";
-import TellClientIdentityDataED from "./eitherDirections/TellClientIdentityDataED";
+import TellClientIdentityDataCTS from "./clientToServer/TellClientIdentityDataCTS";
+import AskClientIdentityResponseDataSTC from "./serverToClient/AskClientIdentityResponseDataSTC";
 import TellClientIdentityResponseDataSTC from "./serverToClient/TellClientIdentityResponseDataSTC";
 
 import EventCallback from "../EventCallback";
 
 interface ClientToServerIdentificationEvents {
 	askClientIdentity: EventCallback<AskClientIdentityDataCTS>;
-	tellClientIdentity: EventCallback<TellClientIdentityDataED>;
+	tellClientIdentity: EventCallback<TellClientIdentityDataCTS>;
 }
 
 interface ServerToClientIdentificationEvents {
-	tellClientIdentity: EventCallback<TellClientIdentityDataED>;
+	askClientIdentityResponse: EventCallback<AskClientIdentityResponseDataSTC>;
 	tellClientIdentityResponse: EventCallback<TellClientIdentityResponseDataSTC>;
 }
 
-export { ClientToServerIdentificationEvents, ServerToClientIdentificationEvents };
+export {
+	ClientToServerIdentificationEvents,
+	ServerToClientIdentificationEvents,
+};
