@@ -1,11 +1,11 @@
-import Socket from "@Socket";
+import CustomSocket from "@Socket";
 import User from "@User";
 
 import { usersCount } from "@users";
 
 import config from "@config";
 
-export default function (socket: Socket) {
+export default function (socket: CustomSocket) {
 	return new Promise<void>((resolve, reject) => {
 		socket.once("askClientIdentity", data => {
 			if (usersCount.value >= config.userMaxCount) {
