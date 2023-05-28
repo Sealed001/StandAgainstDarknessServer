@@ -1,6 +1,6 @@
 import { UUID } from "crypto";
 
-type CreatePartyErrorType =
+export type CreatePartyErrorType =
 	| "PASSWORD_TOO_SHORT"
 	| "PASSWORD_TOO_LONG"
 	| "NAME_TOO_SHORT"

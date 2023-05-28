@@ -1,5 +1,5 @@
 type CreatePartyDataCTS = {
-	partyName: string;
+	name: string;
 	password?: string;
 };
 
