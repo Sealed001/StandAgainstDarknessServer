@@ -8,6 +8,10 @@ import config from "@config";
 export default function (socket: CustomSocket) {
 	return new Promise<void>((resolve, reject) => {
 		socket.once("askClientIdentity", data => {
+			if (socket.data.initialized === true) {
+				return;
+			}
+
 			if (usersCount.value >= config.userMaxCount) {
 				socket.emit("askClientIdentityResponse", {
 					success: false,
@@ -19,8 +23,8 @@ export default function (socket: CustomSocket) {
 			}
 
 			if (
-				data.clientType !== "Desktop" &&
-				data.clientType !== "Mobile"
+				data.clientType !== "desktop" &&
+				data.clientType !== "mobile"
 			) {
 				socket.emit("askClientIdentityResponse", {
 					success: false,
@@ -31,9 +35,11 @@ export default function (socket: CustomSocket) {
 				return;
 			}
 
-			const user = new User()
-				.setClientType(data.clientType)
-				.bindSocket(socket);
+			const user = new User();
+			user.clientType = data.clientType;
+			user.bindSocket(socket);
+
+			socket.data.initialized = true;
 
 			socket.emit("askClientIdentityResponse", {
 				success: true,
@@ -43,12 +49,16 @@ export default function (socket: CustomSocket) {
 			resolve();
 		});
 		socket.once("tellClientIdentity", data => {
+			if (socket.data.initialized === true) {
+				return;
+			}
+
 			const id = data.id;
 
 			if (typeof id !== "string") {
 				socket.emit("tellClientIdentityResponse", {
 					success: false,
-					error: "WRONG_CLIENT_ID_FORMAT",
+					error: "CLIENT_ID_NOT_FOUND",
 				});
 
 				reject();
@@ -67,7 +77,18 @@ export default function (socket: CustomSocket) {
 
 			const user = User.get(id);
 
-			user.bindSocket(socket);
+			if (!user.bindSocket(socket)) {
+				socket.emit("tellClientIdentityResponse", {
+					success: false,
+					error:
+						"CLIENT_ID_ALREADY_BIND_TO_A_CONNECTED_SOCKET",
+				});
+
+				reject();
+				return;
+			}
+
+			socket.data.initialized = true;
 
 			socket.emit("tellClientIdentityResponse", {
 				success: true,

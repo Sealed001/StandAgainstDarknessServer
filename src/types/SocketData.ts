@@ -1,5 +1,6 @@
 import User from "@User";
 
 export default interface SocketData {
-  user?: User;
-};
+	user?: User;
+	initialized: boolean;
+}

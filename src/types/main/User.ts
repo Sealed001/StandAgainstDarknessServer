@@ -10,7 +10,7 @@ import GameEvents, {
 	mobileToDesktopEventNames,
 } from "../events/game";
 
-export type UserClientType = "Desktop" | "Mobile";
+export type UserClientType = "desktop" | "mobile";
 
 export default class User {
 	public static exists(id: UUID): boolean {
@@ -25,10 +25,7 @@ export default class User {
 		return this._id;
 	}
 
-	private _clientType: Nullable<UserClientType> = null;
-	public get clientType(): Nullable<UserClientType> {
-		return this._clientType;
-	}
+	public clientType: Nullable<UserClientType> = null;
 
 	public party: Nullable<Party> = null;
 
@@ -57,18 +54,13 @@ export default class User {
 		}
 	}
 
-	public setClientType(clientType: UserClientType): User {
-		this._clientType = clientType;
-		return this;
-	}
-
 	public addGameEventsListener(): boolean {
 		if (this.clientType === null) {
 			return false;
 		}
 
 		switch (this.clientType) {
-			case "Desktop": {
+			case "desktop": {
 				for (const eventName of desktopToMobileEventNames) {
 					this._socket?.on(eventName, data => {
 						if (this.party === null) {
@@ -87,7 +79,7 @@ export default class User {
 				}
 				break;
 			}
-			case "Mobile": {
+			case "mobile": {
 				for (const eventName of mobileToDesktopEventNames) {
 					this._socket?.on(eventName, data => {
 						if (this.party === null) {
@@ -124,7 +116,11 @@ export default class User {
 		}
 	}
 
-	public bindSocket(socket: Socket): User {
+	public bindSocket(socket: Socket): boolean {
+		if (this._socket !== null && this._socket.connected) {
+			return false;
+		}
+
 		this._unbindSocket();
 
 		this._socket = socket;
@@ -135,7 +131,7 @@ export default class User {
 			this.destroy();
 		});
 
-		return this;
+		return true;
 	}
 
 	public emitGameEvent(
