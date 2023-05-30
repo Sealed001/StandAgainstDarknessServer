@@ -1,7 +1,7 @@
 import { UUID } from "crypto";
 
 type JoinPartyDataCTS = {
-	partyId: UUID;
+	id: UUID;
 	password?: string;
 };
 
