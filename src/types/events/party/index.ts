@@ -1,6 +1,7 @@
 import GetPartiesDataCTS from "./clientToServer/GetPartiesDataCTS";
 import JoinPartyDataCTS from "./clientToServer/JoinPartyDataCTS";
 import CreatePartyDataCTS from "./clientToServer/CreatePartyDataCTS";
+import LeavePartyDataCTS from "./clientToServer/LeavePartyDataCTS";
 
 import GetPartiesResponseDataSTC from "./serverToClient/GetPartiesResponseDataSTC";
 import JoinPartyResponseDataSTC from "./serverToClient/JoinPartyResponseDataSTC";
@@ -12,6 +13,7 @@ interface ClientToServerPartyEvents {
 	getParties: EventCallback<GetPartiesDataCTS>;
 	joinParty: EventCallback<JoinPartyDataCTS>;
 	createParty: EventCallback<CreatePartyDataCTS>;
+	leaveParty: EventCallback<LeavePartyDataCTS>;
 }
 
 interface ServerToClientPartyEvents {
