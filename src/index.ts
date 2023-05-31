@@ -7,17 +7,21 @@ import serverOptions from "./serverOptions";
 
 import setupInitializationEvents from "./utils/setupInitializationEvents";
 import removeInitializationEvents from "./utils/removeInitializationEvents";
+import setupPartyEvents from "./utils/setupPartyEvents";
+import setupPostInitializationEvents from "./utils/setupPostInitializationEvents";
 
 const io: CustomServer = new Server(serverOptions);
-const port: number = !!process.env.PORT ? Number(process.env.PORT) : 3000;
+const port: number = !!process.env.PORT
+	? Number(process.env.PORT)
+	: 3000;
 
 io.on("connection", (socket: CustomSocket) => {
-	setupInitializationEvents(socket)
-		.then(() => {
-			removeInitializationEvents(socket);
-		})
-		.catch(() => {})
-		.finally(() => {});
+	setupInitializationEvents(socket).then(() => {
+		removeInitializationEvents(socket);
+
+		setupPostInitializationEvents(socket);
+		setupPartyEvents(socket);
+	});
 });
 
 io.listen(port);

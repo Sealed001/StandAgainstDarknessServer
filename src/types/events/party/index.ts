@@ -6,6 +6,7 @@ import LeavePartyDataCTS from "./clientToServer/LeavePartyDataCTS";
 import GetPartiesResponseDataSTC from "./serverToClient/GetPartiesResponseDataSTC";
 import JoinPartyResponseDataSTC from "./serverToClient/JoinPartyResponseDataSTC";
 import createPartyResponseDataSTC from "./serverToClient/CreatePartyResponseDataSTC";
+import PeerDisconnectDataSTC from "./serverToClient/PeerDisconnectDataSTC";
 
 import EventCallback from "../EventCallback";
 
@@ -20,6 +21,7 @@ interface ServerToClientPartyEvents {
 	getPartiesResponse: EventCallback<GetPartiesResponseDataSTC>;
 	joinPartyResponse: EventCallback<JoinPartyResponseDataSTC>;
 	createPartyResponse: EventCallback<createPartyResponseDataSTC>;
+	peerDisconnect: EventCallback<PeerDisconnectDataSTC>;
 }
 
 export {
