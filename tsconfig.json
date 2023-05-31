@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "moduleResolution": "node",
+    "module": "commonjs",
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
     "sourceMap": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": false,
-    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
     "rootDir": "./src",
@@ -26,7 +27,7 @@
       // Other types
       "@Socket": ["./src/types/socket/CustomSocket"],
       "@Server": ["./src/types/server/CustomServer"],
-      "@PartyInfo": ["./src/types/PartyInfo"],
+      "@PartyInfo": ["./src/types/PartyInfo"]
     }
-  },
+  }
 }
