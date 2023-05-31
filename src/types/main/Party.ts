@@ -42,9 +42,29 @@ export default class Party {
 	}
 
 	// TODO: Implement a more secure password system in the future.
-	private _password: Nullable<string> = null;
+	private readonly _password: Nullable<string> = null;
 	public get hasPassword(): boolean {
 		return this._password !== null;
+	}
+
+	private _destroyOnNoConnectedUsers: boolean = true;
+	public get destroyOnNoConnectedUsers(): boolean {
+		return this._destroyOnNoConnectedUsers;
+	}
+	public set destroyOnNoConnectedUsers(value: boolean) {
+		this._destroyOnNoConnectedUsers = value;
+
+		if (
+			this._destroyOnNoConnectedUsers &&
+			this.connectedUsers.length === 0
+		) {
+			this.destroy();
+		}
+	}
+
+	private _isDestroyed: boolean = false;
+	public get isDestroyed(): boolean {
+		return this._isDestroyed;
 	}
 
 	public constructor(password: Nullable<string> = null) {
@@ -58,12 +78,17 @@ export default class Party {
 	}
 
 	public destroy() {
+		this._desktopUser?.leaveParty();
+		this._mobileUser?.leaveParty();
+
 		delete parties[this._id];
+
+		this._isDestroyed = true;
 	}
 
 	public addUser(user: User): boolean {
 		switch (user.clientType) {
-			case "Desktop": {
+			case "desktop": {
 				if (this._desktopUser !== null) {
 					return false;
 				}
@@ -71,7 +96,7 @@ export default class Party {
 				this._desktopUser = user;
 				return true;
 			}
-			case "Mobile": {
+			case "mobile": {
 				if (this._mobileUser !== null) {
 					return false;
 				}
@@ -89,6 +114,13 @@ export default class Party {
 			this._desktopUser = null;
 		} else if (user === this._mobileUser) {
 			this._mobileUser = null;
+		}
+
+		if (
+			this._destroyOnNoConnectedUsers &&
+			this.connectedUsers.length === 0
+		) {
+			this.destroy();
 		}
 	}
 

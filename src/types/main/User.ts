@@ -27,9 +27,17 @@ export default class User {
 
 	public clientType: Nullable<UserClientType> = null;
 
-	public party: Nullable<Party> = null;
+	private _party: Nullable<Party> = null;
+	public get party(): Nullable<Party> {
+		return this._party;
+	}
 
 	private _socket: Nullable<Socket> = null;
+
+	private _isDestroyed: boolean = false;
+	public get isDestroyed(): boolean {
+		return this._isDestroyed;
+	}
 
 	public constructor() {
 		do {
@@ -45,13 +53,8 @@ export default class User {
 		this._unbindSocket();
 
 		removeUser(this);
-	}
 
-	private _unbindSocket() {
-		if (this._socket !== null) {
-			this._socket.data.user = null;
-			this._socket.disconnect();
-		}
+		this._isDestroyed = true;
 	}
 
 	public addGameEventsListener(): boolean {
@@ -116,6 +119,12 @@ export default class User {
 		}
 	}
 
+	private _unbindSocket() {
+		if (this._socket !== null) {
+			this._socket.data.user = null;
+			this._socket.disconnect();
+		}
+	}
 	public bindSocket(socket: Socket): boolean {
 		if (this._socket !== null && this._socket.connected) {
 			return false;
@@ -132,6 +141,27 @@ export default class User {
 		});
 
 		return true;
+	}
+
+	public joinParty(party: Party): boolean {
+		if (this._party !== null) {
+			return false;
+		}
+
+		if (!party.addUser(this)) {
+			return false;
+		}
+
+		this._party = party;
+		return true;
+	}
+	public leaveParty() {
+		if (this._party === null) {
+			return;
+		}
+
+		this._party.removeUser(this);
+		this._party = null;
 	}
 
 	public emitGameEvent(
