@@ -79,6 +79,11 @@ export default function (socket: CustomSocket) {
 
 		const party = new Party(partyPassword);
 		socket.data.user.joinParty(party);
+
+		socket.emit("createPartyResponse", {
+			success: true,
+			partyId: party.id,
+		});
 	});
 
 	socket.on("joinParty", data => {
@@ -129,5 +134,9 @@ export default function (socket: CustomSocket) {
 		}
 
 		socket.data.user.joinParty(party);
+
+		socket.emit("joinPartyResponse", {
+			success: true,
+		});
 	});
 }
