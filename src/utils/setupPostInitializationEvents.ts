@@ -6,6 +6,10 @@ export default function (socket: CustomSocket) {
 			return;
 		}
 
+		if (!socket.data.user.party) {
+			return;
+		}
+
 		socket.data.user.leaveParty();
 	});
 }

@@ -1,14 +1,17 @@
 import { randomUUID, UUID } from "crypto";
-import { Socket } from "socket.io";
 
 import users, { addUser, removeUser } from "@users";
 
 import Party from "@Party";
+import CustomSocket from "@Socket";
 
 import GameEvents, {
 	desktopToMobileEventNames,
 	mobileToDesktopEventNames,
 } from "../events/game";
+
+import setupPartyEvents from "../../utils/setupPartyEvents";
+import removePartyEvents from "../../utils/removePartyEvents";
 
 export type UserClientType = "desktop" | "mobile";
 
@@ -32,7 +35,7 @@ export default class User {
 		return this._party;
 	}
 
-	private _socket: Nullable<Socket> = null;
+	private _socket: Nullable<CustomSocket> = null;
 
 	private _isDestroyed: boolean = false;
 	public get isDestroyed(): boolean {
@@ -57,7 +60,7 @@ export default class User {
 		this._isDestroyed = true;
 	}
 
-	public addGameEventsListener(): boolean {
+	public setupGameEventsListeners(): boolean {
 		if (this.clientType === null) {
 			return false;
 		}
@@ -65,6 +68,7 @@ export default class User {
 		switch (this.clientType) {
 			case "desktop": {
 				for (const eventName of desktopToMobileEventNames) {
+					// @ts-ignore
 					this._socket?.on(eventName, data => {
 						if (this.party === null) {
 							return;
@@ -84,6 +88,7 @@ export default class User {
 			}
 			case "mobile": {
 				for (const eventName of mobileToDesktopEventNames) {
+					// @ts-ignore
 					this._socket?.on(eventName, data => {
 						if (this.party === null) {
 							return;
@@ -106,7 +111,7 @@ export default class User {
 		return true;
 	}
 
-	public removeGameEventsListener() {
+	public removeGameEventsListeners() {
 		if (this._socket === null) {
 			return;
 		}
@@ -121,11 +126,11 @@ export default class User {
 
 	private _unbindSocket() {
 		if (this._socket !== null) {
-			this._socket.data.user = null;
+			this._socket.data.user = undefined;
 			this._socket.disconnect();
 		}
 	}
-	public bindSocket(socket: Socket): boolean {
+	public bindSocket(socket: CustomSocket): boolean {
 		if (this._socket !== null && this._socket.connected) {
 			return false;
 		}
@@ -136,6 +141,7 @@ export default class User {
 
 		socket.data.user = this;
 
+		// @ts-ignore
 		socket.on("reconnect_failed", () => {
 			this.destroy();
 		});
@@ -144,6 +150,10 @@ export default class User {
 	}
 
 	public joinParty(party: Party): boolean {
+		if (this._socket === null) {
+			return false;
+		}
+
 		if (this._party !== null) {
 			return false;
 		}
@@ -153,6 +163,9 @@ export default class User {
 		}
 
 		this._party = party;
+		this.setupGameEventsListeners();
+		removePartyEvents(this._socket);
+
 		return true;
 	}
 	public leaveParty() {
@@ -162,6 +175,13 @@ export default class User {
 
 		this._party.removeUser(this);
 		this._party = null;
+
+		if (this._socket === null) {
+			return;
+		}
+
+		this.removeGameEventsListeners();
+		setupPartyEvents(this._socket);
 	}
 
 	public emitGameEvent(
