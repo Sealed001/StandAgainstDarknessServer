@@ -21475,6 +21475,16 @@ function removeUser(user) {
 }
 var users_default = users;
 
+// src/config.ts
+var debug = process.env.NODE_ENV !== "production";
+var config = {
+  partyNameSizeRange: [3, 35],
+  partyPasswordSizeRange: [3, 20],
+  userMaxCount: 100,
+  debug
+};
+var config_default = config;
+
 // src/types/events/game/desktopToMobile/index.ts
 var desktopToMobileEventNames = [
   "definePortalPositions",
@@ -21494,16 +21504,6 @@ var mobileToDesktopEventNames = ["changeMobSlot", "spawnBattalion"];
 // src/storage/parties.ts
 var parties = {};
 var parties_default = parties;
-
-// src/config.ts
-var debug = process.env.NODE_ENV !== "production";
-var config = {
-  partyNameSizeRange: [3, 35],
-  partyPasswordSizeRange: [3, 20],
-  userMaxCount: 100,
-  debug
-};
-var config_default = config;
 
 // src/types/main/Party.ts
 var import_crypto = require("crypto");
@@ -21561,11 +21561,17 @@ var Party = class {
       this._id = (0, import_crypto.randomUUID)();
     } while (Party.exists(this._id));
     parties_default[this._id] = this;
+    if (config_default.debug) {
+      console.log(`Created party ${this._id}`);
+    }
     this._password = password;
   }
   destroy() {
     this._desktopUser?.leaveParty();
     this._mobileUser?.leaveParty();
+    if (config_default.debug) {
+      console.log(`Destroyed party ${this._id}`);
+    }
     delete parties_default[this._id];
     this._isDestroyed = true;
   }
@@ -21575,12 +21581,22 @@ var Party = class {
         if (this._desktopUser !== null) {
           return false;
         }
+        if (config_default.debug) {
+          console.log(
+            `Desktop User ${user.id} joined party ${this.id}`
+          );
+        }
         this._desktopUser = user;
         return true;
       }
       case "mobile": {
         if (this._mobileUser !== null) {
           return false;
+        }
+        if (config_default.debug) {
+          console.log(
+            `Mobile User ${user.id} joined party ${this.id}`
+          );
         }
         this._mobileUser = user;
         return true;
@@ -21591,8 +21607,18 @@ var Party = class {
   }
   removeUser(user) {
     if (user === this._desktopUser) {
+      if (config_default.debug) {
+        console.log(
+          `Desktop User ${user.id} left party ${this.id}`
+        );
+      }
       this._desktopUser = null;
     } else if (user === this._mobileUser) {
+      if (config_default.debug) {
+        console.log(
+          `Mobile User ${user.id} left party ${this.id}`
+        );
+      }
       this._mobileUser = null;
     }
     if (this._destroyOnNoConnectedUsers && this.connectedUsers.length === 0) {
@@ -21726,12 +21752,18 @@ var User = class {
     do {
       this._id = (0, import_crypto2.randomUUID)();
     } while (User.exists(this._id));
+    if (config_default.debug) {
+      console.log(`Created user ${this._id}`);
+    }
     addUser(this);
   }
   destroy() {
     this.party?.removeUser(this);
     this._unbindSocket();
     removeUser(this);
+    if (config_default.debug) {
+      console.log(`Destroyed user ${this._id}`);
+    }
     this._isDestroyed = true;
   }
   setupGameEventsListeners() {
@@ -21789,6 +21821,11 @@ var User = class {
   }
   _unbindSocket() {
     if (this._socket !== null) {
+      if (config_default.debug) {
+        console.log(
+          `User ${this._id} unbound from socket ${this._socket.id}`
+        );
+      }
       this._socket.data.user = void 0;
       this._socket.disconnect();
     }
@@ -21800,6 +21837,11 @@ var User = class {
     this._unbindSocket();
     this._socket = socket;
     socket.data.user = this;
+    if (config_default.debug) {
+      console.log(
+        `User ${this._id} bound to socket ${socket.id}`
+      );
+    }
     socket.on("reconnect_failed", () => {
       this.destroy();
     });
@@ -21843,7 +21885,7 @@ var User = class {
 // src/utils/setupInitializationEvents.ts
 function setupInitializationEvents_default(socket) {
   return new Promise((resolve, reject) => {
-    socket.once("askClientIdentity", (data) => {
+    socket.on("askClientIdentity", (data) => {
       if (socket.data.initialized === true) {
         return;
       }
@@ -21866,6 +21908,11 @@ function setupInitializationEvents_default(socket) {
       const user = new User();
       user.clientType = data.clientType;
       user.bindSocket(socket);
+      if (config_default.debug) {
+        console.log(
+          `User ${user.id} connected with client type ${user.clientType}`
+        );
+      }
       socket.data.initialized = true;
       socket.emit("askClientIdentityResponse", {
         success: true,
@@ -21873,7 +21920,7 @@ function setupInitializationEvents_default(socket) {
       });
       resolve();
     });
-    socket.once("tellClientIdentity", (data) => {
+    socket.on("tellClientIdentity", (data) => {
       if (socket.data.initialized === true) {
         return;
       }
@@ -21935,10 +21982,20 @@ function setupPostInitializationEvents_default(socket) {
 var io2 = new Server(serverOptions_default);
 var port = !!process.env.PORT ? Number(process.env.PORT) : 3e3;
 io2.on("connection", (socket) => {
+  if (config_default.debug) {
+    console.log(`New connection: ${socket.id}`);
+  }
   setupInitializationEvents_default(socket).then(() => {
     removeInitializationEvents_default(socket);
     setupPostInitializationEvents_default(socket);
     setupPartyEvents_default(socket);
+  }).catch((error) => {
+    console.error(error);
+  });
+  socket.on("disconnect", () => {
+    if (config_default.debug) {
+      console.log(`Disconnected: ${socket.id}`);
+    }
   });
 });
 io2.listen(port);

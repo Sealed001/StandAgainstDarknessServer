@@ -1,6 +1,7 @@
 import { randomUUID, UUID } from "crypto";
 
 import users, { addUser, removeUser } from "@users";
+import config from "@config";
 
 import Party from "@Party";
 import CustomSocket from "@Socket";
@@ -47,6 +48,10 @@ export default class User {
 			this._id = randomUUID();
 		} while (User.exists(this._id));
 
+		if (config.debug) {
+			console.log(`Created user ${this._id}`);
+		}
+
 		addUser(this);
 	}
 
@@ -56,6 +61,10 @@ export default class User {
 		this._unbindSocket();
 
 		removeUser(this);
+
+		if (config.debug) {
+			console.log(`Destroyed user ${this._id}`);
+		}
 
 		this._isDestroyed = true;
 	}
@@ -126,6 +135,12 @@ export default class User {
 
 	private _unbindSocket() {
 		if (this._socket !== null) {
+			if (config.debug) {
+				console.log(
+					`User ${this._id} unbound from socket ${this._socket.id}`
+				);
+			}
+
 			this._socket.data.user = undefined;
 			this._socket.disconnect();
 		}
@@ -141,8 +156,14 @@ export default class User {
 
 		socket.data.user = this;
 
+		if (config.debug) {
+			console.log(
+				`User ${this._id} bound to socket ${socket.id}`
+			);
+		}
+
 		// @ts-ignore
-		socket.on("reconnect_failed", () => {
+		socket.on("disconnect", () => {
 			this.destroy();
 		});
 

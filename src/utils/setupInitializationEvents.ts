@@ -7,7 +7,7 @@ import config from "@config";
 
 export default function (socket: CustomSocket) {
 	return new Promise<void>((resolve, reject) => {
-		socket.once("askClientIdentity", data => {
+		socket.on("askClientIdentity", data => {
 			if (socket.data.initialized === true) {
 				return;
 			}
@@ -39,6 +39,12 @@ export default function (socket: CustomSocket) {
 			user.clientType = data.clientType;
 			user.bindSocket(socket);
 
+			if (config.debug) {
+				console.log(
+					`User ${user.id} connected with client type ${user.clientType}`
+				);
+			}
+
 			socket.data.initialized = true;
 
 			socket.emit("askClientIdentityResponse", {
@@ -48,7 +54,7 @@ export default function (socket: CustomSocket) {
 
 			resolve();
 		});
-		socket.once("tellClientIdentity", data => {
+		socket.on("tellClientIdentity", data => {
 			if (socket.data.initialized === true) {
 				return;
 			}

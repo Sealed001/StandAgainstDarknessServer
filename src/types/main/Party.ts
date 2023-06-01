@@ -2,6 +2,7 @@ import { randomUUID, UUID } from "crypto";
 
 import parties from "@parties";
 import User, { UserClientType } from "@User";
+import config from "@config";
 
 export default class Party {
 	public static exists(id: UUID): boolean {
@@ -74,12 +75,20 @@ export default class Party {
 
 		parties[this._id] = this;
 
+		if (config.debug) {
+			console.log(`Created party ${this._id}`);
+		}
+
 		this._password = password;
 	}
 
 	public destroy() {
 		this._desktopUser?.leaveParty();
 		this._mobileUser?.leaveParty();
+
+		if (config.debug) {
+			console.log(`Destroyed party ${this._id}`);
+		}
 
 		delete parties[this._id];
 
@@ -93,12 +102,24 @@ export default class Party {
 					return false;
 				}
 
+				if (config.debug) {
+					console.log(
+						`Desktop User ${user.id} joined party ${this.id}`
+					);
+				}
+
 				this._desktopUser = user;
 				return true;
 			}
 			case "mobile": {
 				if (this._mobileUser !== null) {
 					return false;
+				}
+
+				if (config.debug) {
+					console.log(
+						`Mobile User ${user.id} joined party ${this.id}`
+					);
 				}
 
 				this._mobileUser = user;
@@ -111,8 +132,19 @@ export default class Party {
 
 	public removeUser(user: User) {
 		if (user === this._desktopUser) {
+			if (config.debug) {
+				console.log(
+					`Desktop User ${user.id} left party ${this.id}`
+				);
+			}
+
 			this._desktopUser = null;
 		} else if (user === this._mobileUser) {
+			if (config.debug) {
+				console.log(
+					`Mobile User ${user.id} left party ${this.id}`
+				);
+			}
 			this._mobileUser = null;
 		}
 
