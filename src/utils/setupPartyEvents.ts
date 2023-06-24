@@ -12,6 +12,16 @@ import { CreatePartyErrorType } from "../types/events/party/serverToClient/Creat
 
 export default function (socket: CustomSocket) {
 	socket.on("getParties", () => {
+		if (
+			config.debug &&
+			socket.data.initialized &&
+			socket.data.user
+		) {
+			console.log(
+				`User ${socket.data.user.id} requested parties`
+			);
+		}
+
 		const partiesInfos: PartyInfo[] = [];
 
 		for (const partyId in parties) {
@@ -19,6 +29,7 @@ export default function (socket: CustomSocket) {
 
 			partiesInfos.push({
 				id: party.id,
+				name: party.name,
 				connectedClientTypes:
 					party.connectedUsersAsClientTypes,
 				hasPassword: party.hasPassword,
@@ -77,7 +88,7 @@ export default function (socket: CustomSocket) {
 			return;
 		}
 
-		const party = new Party(partyPassword);
+		const party = new Party(partyName, partyPassword);
 		socket.data.user.joinParty(party);
 
 		socket.emit("createPartyResponse", {

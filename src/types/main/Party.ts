@@ -42,6 +42,11 @@ export default class Party {
 		) as UserClientType[];
 	}
 
+	private readonly _name: string;
+	public get name(): string {
+		return this._name;
+	}
+
 	// TODO: Implement a more secure password system in the future.
 	private readonly _password: Nullable<string> = null;
 	public get hasPassword(): boolean {
@@ -68,7 +73,10 @@ export default class Party {
 		return this._isDestroyed;
 	}
 
-	public constructor(password: Nullable<string> = null) {
+	public constructor(
+		partyName: string,
+		password: Nullable<string> = null
+	) {
 		do {
 			this._id = randomUUID();
 		} while (Party.exists(this._id));
@@ -80,6 +88,7 @@ export default class Party {
 		}
 
 		this._password = password;
+		this._name = partyName;
 	}
 
 	public destroy() {
