@@ -87,6 +87,16 @@ export default class User {
 							return;
 						}
 
+						if (config.debug) {
+							console.log(
+								`Relaying ${eventName} to mobile user ${this.party.mobileUser.id}`
+							);
+							console.log(typeof data);
+							if (typeof data === "object") {
+								console.log(data);
+							}
+						}
+
 						this.party.mobileUser.emitGameEvent(
 							eventName,
 							data
@@ -105,6 +115,16 @@ export default class User {
 
 						if (this.party.desktopUser === null) {
 							return;
+						}
+
+						if (config.debug) {
+							console.log(
+								`Relaying ${eventName} to desktop user ${this.party.desktopUser.id}`
+							);
+							console.log(typeof data);
+							if (typeof data === "object") {
+								console.log(data);
+							}
 						}
 
 						this.party.desktopUser.emitGameEvent(
