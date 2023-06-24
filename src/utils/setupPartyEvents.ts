@@ -10,15 +10,13 @@ import Party from "@Party";
 
 import { CreatePartyErrorType } from "../types/events/party/serverToClient/CreatePartyResponseDataSTC";
 
+import log from "./log";
+
 export default function (socket: CustomSocket) {
 	socket.on("getParties", () => {
-		if (
-			config.debug &&
-			socket.data.initialized &&
-			socket.data.user
-		) {
-			console.log(
-				`User ${socket.data.user.id} requested parties`
+		if (socket.data.initialized && socket.data.user) {
+			log(
+				`User with id ${socket.data.user.id} requested parties`
 			);
 		}
 
@@ -89,7 +87,18 @@ export default function (socket: CustomSocket) {
 		}
 
 		const party = new Party(partyName, partyPassword);
-		socket.data.user.joinParty(party);
+		const joinPartyResult =
+			socket.data.user.joinParty(party);
+
+		if (!joinPartyResult) {
+			party.destroy();
+
+			socket.emit("createPartyResponse", {
+				success: false,
+				errors: ["CAN_NOT_CREATE_PARTY"],
+			});
+			return;
+		}
 
 		socket.emit("createPartyResponse", {
 			success: true,
@@ -144,7 +153,16 @@ export default function (socket: CustomSocket) {
 			return;
 		}
 
-		socket.data.user.joinParty(party);
+		const joinPartyResult =
+			socket.data.user.joinParty(party);
+
+		if (!joinPartyResult) {
+			socket.emit("joinPartyResponse", {
+				success: false,
+				error: "CAN_NOT_JOIN_PARTY",
+			});
+			return;
+		}
 
 		socket.emit("joinPartyResponse", {
 			success: true,

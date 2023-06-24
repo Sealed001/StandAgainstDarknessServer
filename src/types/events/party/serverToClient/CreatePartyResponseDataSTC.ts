@@ -5,7 +5,8 @@ export type CreatePartyErrorType =
 	| "PASSWORD_TOO_LONG"
 	| "NAME_TOO_SHORT"
 	| "NAME_TOO_LONG"
-	| "FORBIDDEN_NAME";
+	| "FORBIDDEN_NAME"
+	| "CAN_NOT_CREATE_PARTY";
 
 type CreatePartyResponseDataSTC =
 	| {

@@ -4,6 +4,7 @@ import User from "@User";
 import { usersCount } from "@users";
 
 import config from "@config";
+import log from "./log";
 
 export default function (socket: CustomSocket) {
 	return new Promise<void>((resolve, reject) => {
@@ -39,11 +40,11 @@ export default function (socket: CustomSocket) {
 			user.clientType = data.clientType;
 			user.bindSocket(socket);
 
-			if (config.debug) {
-				console.log(
-					`User ${user.id} connected with client type ${user.clientType}`
-				);
-			}
+			const emoji =
+				user.clientType === "desktop" ? "🖥️" : "📱";
+			log(
+				`User ${user.id} connected with client type ${user.clientType} ${emoji}`
+			);
 
 			socket.data.initialized = true;
 
@@ -54,6 +55,10 @@ export default function (socket: CustomSocket) {
 
 			resolve();
 		});
+
+		// "tellClientIdentity" is not implemented in the client
+		return;
+
 		socket.on("tellClientIdentity", data => {
 			if (socket.data.initialized === true) {
 				return;

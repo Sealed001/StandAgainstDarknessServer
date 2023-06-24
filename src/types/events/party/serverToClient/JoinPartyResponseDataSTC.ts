@@ -1,6 +1,7 @@
 export type JoinPartyErrorType =
 	| "PARTY_NOT_FOUND"
-	| "INCORRECT_PASSWORD";
+	| "INCORRECT_PASSWORD"
+	| "CAN_NOT_JOIN_PARTY";
 
 type JoinPartyResponseDataSTC =
 	| {

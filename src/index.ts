@@ -9,7 +9,8 @@ import setupInitializationEvents from "./utils/setupInitializationEvents";
 import removeInitializationEvents from "./utils/removeInitializationEvents";
 import setupPartyEvents from "./utils/setupPartyEvents";
 import setupPostInitializationEvents from "./utils/setupPostInitializationEvents";
-import config from "@config";
+
+import log from "./utils/log";
 
 const io: CustomServer = new Server(serverOptions);
 const port: number = !!process.env.PORT
@@ -17,10 +18,6 @@ const port: number = !!process.env.PORT
 	: 3000;
 
 io.on("connection", (socket: CustomSocket) => {
-	if (config.debug) {
-		console.log(`New connection: ${socket.id}`);
-	}
-
 	setupInitializationEvents(socket)
 		.then(() => {
 			removeInitializationEvents(socket);
@@ -31,18 +28,10 @@ io.on("connection", (socket: CustomSocket) => {
 		.catch((error: Error) => {
 			console.error(error);
 		});
-
-	socket.on("disconnect", () => {
-		if (config.debug) {
-			console.log(`Disconnected: ${socket.id}`);
-		}
-	});
 });
 
 io.listen(port);
 
-console.log(
-	`${new Date().toISOString()}: Server started in ${
-		process.env.NODE_ENV
-	} mode on port ${port}`
+log(
+	`Server started in ${process.env.NODE_ENV} mode on port ${port}`
 );

@@ -2,7 +2,8 @@ import { randomUUID, UUID } from "crypto";
 
 import parties from "@parties";
 import User, { UserClientType } from "@User";
-import config from "@config";
+
+import log from "../../utils/log";
 
 export default class Party {
 	public static exists(id: UUID): boolean {
@@ -15,6 +16,17 @@ export default class Party {
 	private readonly _id: UUID;
 	public get id(): UUID {
 		return this._id;
+	}
+
+	private readonly _name: string;
+	public get name(): string {
+		return this._name;
+	}
+
+	// TODO: Implement a more secure password system in the future.
+	private readonly _password: Nullable<string> = null;
+	public get hasPassword(): boolean {
+		return this._password !== null;
 	}
 
 	private _desktopUser: Nullable<User> = null;
@@ -40,17 +52,6 @@ export default class Party {
 		return connectedUsersClientTypes.filter(
 			clientType => clientType !== null
 		) as UserClientType[];
-	}
-
-	private readonly _name: string;
-	public get name(): string {
-		return this._name;
-	}
-
-	// TODO: Implement a more secure password system in the future.
-	private readonly _password: Nullable<string> = null;
-	public get hasPassword(): boolean {
-		return this._password !== null;
 	}
 
 	private _destroyOnNoConnectedUsers: boolean = true;
@@ -83,9 +84,7 @@ export default class Party {
 
 		parties[this._id] = this;
 
-		if (config.debug) {
-			console.log(`Created party ${this._id}`);
-		}
+		log(`Created party with id ${this._id}`);
 
 		this._password = password;
 		this._name = partyName;
@@ -95,9 +94,7 @@ export default class Party {
 		this._desktopUser?.leaveParty();
 		this._mobileUser?.leaveParty();
 
-		if (config.debug) {
-			console.log(`Destroyed party ${this._id}`);
-		}
+		log(`Destroyed party with id ${this._id}`);
 
 		delete parties[this._id];
 
@@ -111,11 +108,9 @@ export default class Party {
 					return false;
 				}
 
-				if (config.debug) {
-					console.log(
-						`Desktop User ${user.id} joined party ${this.id}`
-					);
-				}
+				log(
+					`Desktop User ${user.id} joined party ${this.id}`
+				);
 
 				this._desktopUser = user;
 				return true;
@@ -125,11 +120,9 @@ export default class Party {
 					return false;
 				}
 
-				if (config.debug) {
-					console.log(
-						`Mobile User ${user.id} joined party ${this.id}`
-					);
-				}
+				log(
+					`Mobile User ${user.id} joined party ${this.id}`
+				);
 
 				this._mobileUser = user;
 				return true;
@@ -141,19 +134,16 @@ export default class Party {
 
 	public removeUser(user: User) {
 		if (user === this._desktopUser) {
-			if (config.debug) {
-				console.log(
-					`Desktop User ${user.id} left party ${this.id}`
-				);
-			}
+			log(
+				`Desktop User with id ${user.id} left party with id ${this.id}`
+			);
 
 			this._desktopUser = null;
 		} else if (user === this._mobileUser) {
-			if (config.debug) {
-				console.log(
-					`Mobile User ${user.id} left party ${this.id}`
-				);
-			}
+			log(
+				`Mobile User with id ${user.id} left party with id ${this.id}`
+			);
+
 			this._mobileUser = null;
 		}
 

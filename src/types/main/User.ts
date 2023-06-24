@@ -1,7 +1,6 @@
 import { randomUUID, UUID } from "crypto";
 
 import users, { addUser, removeUser } from "@users";
-import config from "@config";
 
 import Party from "@Party";
 import CustomSocket from "@Socket";
@@ -13,6 +12,7 @@ import GameEvents, {
 
 import setupPartyEvents from "../../utils/setupPartyEvents";
 import removePartyEvents from "../../utils/removePartyEvents";
+import log from "../../utils/log";
 
 export type UserClientType = "desktop" | "mobile";
 
@@ -48,9 +48,7 @@ export default class User {
 			this._id = randomUUID();
 		} while (User.exists(this._id));
 
-		if (config.debug) {
-			console.log(`Created user ${this._id}`);
-		}
+		log(`Created user with id ${this._id}`);
 
 		addUser(this);
 	}
@@ -62,9 +60,7 @@ export default class User {
 
 		removeUser(this);
 
-		if (config.debug) {
-			console.log(`Destroyed user ${this._id}`);
-		}
+		log(`Destroyed user with id ${this._id}`);
 
 		this._isDestroyed = true;
 	}
@@ -87,15 +83,9 @@ export default class User {
 							return;
 						}
 
-						if (config.debug) {
-							console.log(
-								`Relaying ${eventName} to mobile user ${this.party.mobileUser.id}`
-							);
-							console.log(typeof data);
-							if (typeof data === "object") {
-								console.log(data);
-							}
-						}
+						log(
+							`Relaying ${eventName} to mobile user with id ${this.party.mobileUser.id}`
+						);
 
 						this.party.mobileUser.emitGameEvent(
 							eventName,
@@ -117,15 +107,9 @@ export default class User {
 							return;
 						}
 
-						if (config.debug) {
-							console.log(
-								`Relaying ${eventName} to desktop user ${this.party.desktopUser.id}`
-							);
-							console.log(typeof data);
-							if (typeof data === "object") {
-								console.log(data);
-							}
-						}
+						log(
+							`Relaying ${eventName} to desktop user with id ${this.party.desktopUser.id}`
+						);
 
 						this.party.desktopUser.emitGameEvent(
 							eventName,
@@ -155,12 +139,6 @@ export default class User {
 
 	private _unbindSocket() {
 		if (this._socket !== null) {
-			if (config.debug) {
-				console.log(
-					`User ${this._id} unbound from socket ${this._socket.id}`
-				);
-			}
-
 			this._socket.data.user = undefined;
 			this._socket.disconnect();
 		}
@@ -175,12 +153,6 @@ export default class User {
 		this._socket = socket;
 
 		socket.data.user = this;
-
-		if (config.debug) {
-			console.log(
-				`User ${this._id} bound to socket ${socket.id}`
-			);
-		}
 
 		// @ts-ignore
 		socket.on("disconnect", () => {
