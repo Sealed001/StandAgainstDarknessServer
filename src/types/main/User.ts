@@ -54,7 +54,7 @@ export default class User {
 	}
 
 	public destroy() {
-		this.party?.removeUser(this);
+		this.party?.removeUser(this, true);
 
 		this._unbindSocket();
 
@@ -83,6 +83,14 @@ export default class User {
 							return;
 						}
 
+						if (eventName === "startGameResponse") {
+							if (data.success) {
+								this.party.locked = true;
+							}
+						} else if (eventName === "endGame") {
+							this.party.locked = false;
+						}
+
 						log(
 							`Relaying ${eventName} to mobile user with id ${this.party.mobileUser.id}`
 						);
@@ -104,6 +112,9 @@ export default class User {
 						}
 
 						if (this.party.desktopUser === null) {
+							if (eventName === "startGame") {
+								this.emitStartGameResponse(false);
+							}
 							return;
 						}
 
@@ -181,20 +192,30 @@ export default class User {
 
 		return true;
 	}
-	public leaveParty() {
-		if (this._party === null) {
-			return;
-		}
-
-		this._party.removeUser(this);
-		this._party = null;
-
+	public leaveParty(force = false): boolean {
 		if (this._socket === null) {
-			return;
+			return false;
 		}
+
+		if (this._party === null) {
+			return false;
+		}
+
+		const removeUserResult = this._party.removeUser(
+			this,
+			force
+		);
+
+		if (!removeUserResult) {
+			return false;
+		}
+
+		this._party = null;
 
 		this.removeGameEventsListeners();
 		setupPartyEvents(this._socket);
+
+		return true;
 	}
 
 	public emitGameEvent(
@@ -206,5 +227,28 @@ export default class User {
 		}
 
 		this._socket.emit(eventName, data);
+	}
+
+	public emitPartyPlayersCountUpdate(
+		newPlayersCount: number
+	) {
+		if (this._socket === null) {
+			return;
+		}
+
+		this._socket.emit(
+			"partyPlayersCountUpdated",
+			newPlayersCount
+		);
+	}
+
+	public emitStartGameResponse(success: boolean) {
+		if (this._socket === null) {
+			return;
+		}
+
+		this._socket.emit("startGameResponse", {
+			success,
+		});
 	}
 }

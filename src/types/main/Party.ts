@@ -29,6 +29,20 @@ export default class Party {
 		return this._password !== null;
 	}
 
+	private _locked: boolean = false;
+	public get locked(): boolean {
+		return this._locked;
+	}
+	public set locked(value: boolean) {
+		this._locked = value;
+
+		if (this._locked) {
+			log(`Party with id ${this._id} is now locked.`);
+		} else {
+			log(`Party with id ${this._id} is now unlocked.`);
+		}
+	}
+
 	private _desktopUser: Nullable<User> = null;
 	public get desktopUser(): Nullable<User> {
 		return this._desktopUser;
@@ -91,8 +105,8 @@ export default class Party {
 	}
 
 	public destroy() {
-		this._desktopUser?.leaveParty();
-		this._mobileUser?.leaveParty();
+		this._desktopUser?.leaveParty(true);
+		this._mobileUser?.leaveParty(true);
 
 		log(`Destroyed party with id ${this._id}`);
 
@@ -113,6 +127,11 @@ export default class Party {
 				);
 
 				this._desktopUser = user;
+
+				if (this._mobileUser !== null) {
+					this._mobileUser.emitPartyPlayersCountUpdate(2);
+				}
+
 				return true;
 			}
 			case "mobile": {
@@ -125,6 +144,11 @@ export default class Party {
 				);
 
 				this._mobileUser = user;
+
+				if (this._desktopUser !== null) {
+					this._desktopUser.emitPartyPlayersCountUpdate(2);
+				}
+
 				return true;
 			}
 			default:
@@ -132,19 +156,33 @@ export default class Party {
 		}
 	}
 
-	public removeUser(user: User) {
+	public removeUser(user: User, force = false): boolean {
+		if (this.locked && !force) {
+			return false;
+		}
+
 		if (user === this._desktopUser) {
 			log(
 				`Desktop User with id ${user.id} left party with id ${this.id}`
 			);
 
 			this._desktopUser = null;
-		} else if (user === this._mobileUser) {
+
+			if (this._mobileUser !== null) {
+				this._mobileUser.emitPartyPlayersCountUpdate(1);
+			}
+		}
+
+		if (user === this._mobileUser) {
 			log(
 				`Mobile User with id ${user.id} left party with id ${this.id}`
 			);
 
 			this._mobileUser = null;
+
+			if (this._desktopUser !== null) {
+				this._desktopUser.emitPartyPlayersCountUpdate(1);
+			}
 		}
 
 		if (
@@ -153,6 +191,8 @@ export default class Party {
 		) {
 			this.destroy();
 		}
+
+		return true;
 	}
 
 	public isCorrectPassword(password: string): boolean {

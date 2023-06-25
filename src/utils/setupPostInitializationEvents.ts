@@ -7,9 +7,16 @@ export default function (socket: CustomSocket) {
 		}
 
 		if (!socket.data.user.party) {
+			socket.emit("leavePartyResponse", {
+				success: false,
+			});
 			return;
 		}
 
-		socket.data.user.leaveParty();
+		const leavePartySuccess = socket.data.user.leaveParty();
+
+		socket.emit("leavePartyResponse", {
+			success: leavePartySuccess,
+		});
 	});
 }
